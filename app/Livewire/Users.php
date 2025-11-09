@@ -8,15 +8,21 @@ use Illuminate\Support\Facades\Hash;
 
 class Users extends Component
 {
+    public $name = '';
+    public $email = '';
+    public $password = '';
 
-
-    public function createUser()
+    public function createNewUser()
     {
         User::create([                       
-            'name' => 'M Alif Fadlan',
-            'email' => 'test3@email.com',
-            'password' => Hash::make('password'),
+            'name' =>  $this->name,
+            'email' => $this->email,
+            'password' => Hash::make($this->password),
         ]);
+        $this->reset([
+            'name',
+            'email',
+            'password']);
     }
 
     public function render()
