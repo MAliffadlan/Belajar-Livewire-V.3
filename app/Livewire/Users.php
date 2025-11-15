@@ -6,9 +6,13 @@ use Livewire\Component;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Validate;
+use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class Users extends Component
 {
+    use WithFileUploads, WithPagination;
+
     #[Validate('required|min:3')]
     public $name = '';
     
@@ -18,19 +22,29 @@ class Users extends Component
     #[Validate('required|min:3')]
     public $password = '';
 
+    #[Validate('image|max:1000')]
+    public $avatar;
+
     public function createNewUser()
     {
-        // validasi attribute annotations akan dipakai oleh $this->validate()
-        $this->validate();
+       sleep(1);
+
+        $validated = $this->validate();
+
+        if ($this->avatar) {
+            $validated['avatar'] = $this->avatar->store('avatars', 'public');
+        }
+
 
         User::create([
             'name' =>  $this->name,
             'email' => $this->email,
             'password' => Hash::make($this->password),
+            'avatar' => $validated['avatar'],
         ]);
 
-        // reset input field
-        $this->reset(['name', 'email', 'password']);
+        
+        $this->reset(['name', 'email', 'password', 'avatar']);
 
        
         session()->flash('success', 'User successfully created.');
@@ -40,7 +54,7 @@ class Users extends Component
     {
         return view('livewire.users', [
             'title' => 'Users Page',
-            'users' => User::all(),
+            'users' => User::latest()->paginate(6),
         ]);
     }
 }
